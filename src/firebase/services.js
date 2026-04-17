@@ -98,3 +98,35 @@ export const getLeaderboard = async () => {
   });
   return leaderboard;
 };
+
+// --- Daily Test Services ---
+
+export const saveDailyResult = async (userId, userName, score, correct, total, timeTaken) => {
+  const today = new Date().toISOString().split('T')[0]; // e.g. "2026-04-17"
+  
+  // Save to dailyResults collection
+  await addDoc(collection(db, "dailyResults"), {
+    userId,
+    userName,
+    score,
+    correct,
+    total,
+    timeTaken, // seconds taken
+    date: today,
+    timestamp: new Date().toISOString()
+  });
+};
+
+export const getDailyLeaderboard = async () => {
+  const today = new Date().toISOString().split('T')[0];
+  const ref = collection(db, "dailyResults");
+  const q = query(ref, orderBy("score", "desc"), limit(20));
+  const querySnapshot = await getDocs(q);
+  const leaderboard = [];
+  querySnapshot.forEach((doc) => {
+    leaderboard.push(doc.data());
+  });
+  // Filter to today's results
+  return leaderboard.filter(r => r.date === today);
+};
+

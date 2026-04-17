@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase/config';
-import { getUserProfile, getQuestions, getLeaderboard } from './firebase/services';
+import { getUserProfile, getQuestions, getLeaderboard, getDailyLeaderboard } from './firebase/services';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import TestPage from './pages/TestPage';
-import { Result, Leaderboard } from './pages/Summary';
+import { Result, Leaderboard, DailyLeaderboard } from './pages/Summary';
+import { Footer } from './components/UI';
 
 function App() {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [view, setView] = useState('loading'); // auth, dashboard, test, result, leaderboard
+  const [view, setView] = useState('loading'); // auth, dashboard, test, result, leaderboard, dailyLeaderboard
   const [questions, setQuestions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [testLimit, setTestLimit] = useState(20);
   const [lastResult, setLastResult] = useState(null);
   const [leaderboardData, setLeaderboardData] = useState([]);
+  const [dailyLeaderboardData, setDailyLeaderboardData] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
@@ -25,7 +27,6 @@ function App() {
         const profile = await getUserProfile(u.uid);
         setUserProfile(profile);
         
-        // Fetch questions and wait for them
         try {
           const qs = await getQuestions();
           console.log("Fetched questions:", qs.length);
@@ -61,8 +62,8 @@ function App() {
     setView('test');
   };
 
-  const handleFinishTest = (score, correct, total, reviewData) => {
-    setLastResult({ score, correct, total, reviewData, subCategory: selectedChapter });
+  const handleFinishTest = (score, correct, total, reviewData, isDailyTest = false) => {
+    setLastResult({ score, correct, total, reviewData, subCategory: selectedChapter, isDailyTest });
     refreshProfile();
     setView('result');
   };
@@ -73,12 +74,18 @@ function App() {
     setView('leaderboard');
   };
 
+  const handleViewDailyLeaderboard = async () => {
+    const data = await getDailyLeaderboard();
+    setDailyLeaderboardData(data);
+    setView('dailyLeaderboard');
+  };
+
   if (view === 'loading') {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>Loading...</div>;
   }
 
   return (
-    <div className="App">
+    <div className="App" style={{ paddingBottom: '50px' }}>
       {view === 'auth' && <Auth onAuthSuccess={refreshProfile} />}
       
       {view === 'dashboard' && (
@@ -88,12 +95,14 @@ function App() {
           questions={questions}
           onSelectTest={handleStartTest}
           onViewLeaderboard={handleViewLeaderboard}
+          onViewDailyLeaderboard={handleViewDailyLeaderboard}
         />
       )}
 
       {view === 'test' && (
         <TestPage 
           userId={user.uid}
+          userName={userProfile?.name || 'Anonymous'}
           questions={questions}
           category={selectedCategory}
           subCategory={selectedChapter}
@@ -106,6 +115,7 @@ function App() {
         <Result 
           {...lastResult}
           onBack={() => setView('dashboard')}
+          onViewDailyLeaderboard={handleViewDailyLeaderboard}
         />
       )}
 
@@ -115,6 +125,15 @@ function App() {
           onBack={() => setView('dashboard')}
         />
       )}
+
+      {view === 'dailyLeaderboard' && (
+        <DailyLeaderboard
+          scores={dailyLeaderboardData}
+          onBack={() => setView('dashboard')}
+        />
+      )}
+
+      <Footer />
     </div>
   );
 }

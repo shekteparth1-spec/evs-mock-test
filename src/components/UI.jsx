@@ -52,3 +52,22 @@ export const Timer = ({ duration, onTimeUp, isActive }) => {
     </div>
   );
 };
+
+export const Footer = () => (
+  <footer style={{
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    background: '#1a1a1a',
+    color: '#ffffff',
+    textAlign: 'center',
+    padding: '10px 16px',
+    fontSize: '0.78rem',
+    letterSpacing: '0.02em',
+    zIndex: 9999,
+    boxSizing: 'border-box',
+  }}>
+    © 2026 ParthShekte. ALL RIGHTS RESERVED.
+  </footer>
+);

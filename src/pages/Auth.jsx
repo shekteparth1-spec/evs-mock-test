@@ -39,7 +39,7 @@ const Auth = ({ onAuthSuccess }) => {
   return (
     <div className="fade-in" style={{ padding: '2rem' }}>
       <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-        <h1 style={{ color: 'var(--primary)', fontSize: '2.5rem' }}>EVS Mock</h1>
+        <h1 style={{ color: 'var(--primary)', fontSize: '2.5rem' }}>TestNova</h1>
         <p style={{ color: 'var(--text-muted)' }}>Environmental Education & Sustainability</p>
       </div>
 

@@ -1,49 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, Button } from '../components/UI';
 import { logout } from '../firebase/services';
 import { seedData } from '../firebase/setupData';
 
-const Dashboard = ({ user, userProfile, questions = [], onSelectTest, onViewLeaderboard }) => {
-  const [dailyUnlocked, setDailyUnlocked] = useState(false);
-  const [timeLeft, setTimeLeft] = useState('');
+const Dashboard = ({ user, userProfile, questions = [], onSelectTest, onViewLeaderboard, onViewDailyLeaderboard }) => {
+  const dailyUnlocked = true;
+  const timeLeft = 'Available anytime!';
   const [viewMode, setViewMode] = useState('main'); // 'main', 'chapters', or 'countSelection'
   const [selectedConfig, setSelectedConfig] = useState(null); // { type, chapter }
   const questionCount = questions.length;
-
-  useEffect(() => {
-    const checkDailyUnlock = () => {
-      // Get IST Time (UTC + 5.5 hours)
-      const now = new Date();
-      const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
-      const hours = istTime.getUTCHours();
-      const minutes = istTime.getUTCMinutes();
-      
-      // Unlock ONLY from 19:00 to 19:59 (7 PM to 8 PM) IST
-      if (hours === 19) {
-        setDailyUnlocked(true);
-        setTimeLeft('Unlocked! Ends at 8 PM.');
-      } else {
-        setDailyUnlocked(false);
-        if (hours < 19) {
-          const remHours = 18 - hours;
-          const remMins = 59 - minutes;
-          setTimeLeft(`Unlocks in ${remHours}h ${remMins}m (7 PM to 8 PM IST)`);
-        } else {
-          setTimeLeft('Test closed for today. See you tomorrow at 7 PM!');
-        }
-      }
-    };
-
-    checkDailyUnlock();
-    const interval = setInterval(checkDailyUnlock, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, []);
 
   const uniqueChapters = [...new Set(questions.filter(q => q.chapter).map(q => q.chapter))];
 
   const handleSelectBasic = (type, chapter = null) => {
     setSelectedConfig({ type, chapter });
     setViewMode('countSelection');
+  };
+
+  // Daily test: skip count selection, fixed 75 questions
+  const handleDailyTest = () => {
+    onSelectTest('daily', null, 75);
   };
 
   const finalizeSelection = (limit) => {
@@ -166,14 +142,14 @@ const Dashboard = ({ user, userProfile, questions = [], onSelectTest, onViewLead
         </Card>
 
         <Card 
-          onClick={() => dailyUnlocked && handleSelectBasic('daily')} 
-          style={{ cursor: dailyUnlocked ? 'pointer' : 'not-allowed', opacity: dailyUnlocked ? 1 : 0.6, borderLeft: '5px solid var(--secondary)' }}
+          onClick={handleDailyTest} 
+          style={{ cursor: 'pointer', borderLeft: '5px solid var(--secondary)' }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h4 style={{ margin: 0 }}>Daily Mock Test</h4>
               <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                {timeLeft}
+                75 Questions · 90 Min Timer
               </p>
             </div>
             <span style={{ fontSize: '1.5rem' }}>🏆</span>
@@ -192,8 +168,15 @@ const Dashboard = ({ user, userProfile, questions = [], onSelectTest, onViewLead
 
         <Card onClick={onViewLeaderboard} style={{ cursor: 'pointer', background: 'var(--primary)', color: 'white' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h4 style={{ margin: 0 }}>View Leaderboard</h4>
+            <h4 style={{ margin: 0 }}>Overall Leaderboard</h4>
             <span style={{ fontSize: '1.5rem' }}>📊</span>
+          </div>
+        </Card>
+
+        <Card onClick={onViewDailyLeaderboard} style={{ cursor: 'pointer', background: 'var(--secondary)', color: 'white' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h4 style={{ margin: 0 }}>Daily Leaderboard</h4>
+            <span style={{ fontSize: '1.5rem' }}>🥇</span>
           </div>
         </Card>
       </div>

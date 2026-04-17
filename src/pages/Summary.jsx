@@ -102,7 +102,7 @@ export const Leaderboard = ({ scores, onBack }) => {
         <Button onClick={onBack} variant="secondary" style={{ padding: '0.5rem', borderRadius: '50%', width: '40px', height: '40px' }}>
           ←
         </Button>
-        <h2 style={{ margin: 0 }}>Leaderboard</h2>
+        <h2 style={{ margin: 0 }}>Overall Leaderboard</h2>
       </div>
 
       <Card style={{ padding: '0', overflow: 'hidden' }}>
@@ -149,3 +149,69 @@ export const Leaderboard = ({ scores, onBack }) => {
     </div>
   );
 };
+
+export const DailyLeaderboard = ({ scores, onBack }) => {
+  const formatTime = (secs) => {
+    if (!secs) return '--';
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}m ${s}s`;
+  };
+
+  return (
+    <div className="fade-in" style={{ padding: '1.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+        <Button onClick={onBack} variant="secondary" style={{ padding: '0.5rem', borderRadius: '50%', width: '40px', height: '40px' }}>
+          ←
+        </Button>
+        <h2 style={{ margin: 0 }}>🥇 Daily Leaderboard</h2>
+      </div>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+        Today's Daily Mock Test (75 Questions)
+      </p>
+
+      <Card style={{ padding: '0', overflow: 'hidden' }}>
+        {scores.length === 0 ? (
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            No one has completed today's daily test yet!
+          </div>
+        ) : (
+          scores.map((entry, idx) => (
+            <div 
+              key={idx} 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                padding: '1rem 1.2rem', 
+                gap: '1rem',
+                borderBottom: idx === scores.length - 1 ? 'none' : '1px solid #f0f0f0',
+                background: idx === 0 ? 'rgba(255, 215, 0, 0.1)' : 'transparent'
+              }}
+            >
+              <div style={{ 
+                width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
+                background: idx === 0 ? '#ffd700' : idx === 1 ? '#c0c0c0' : idx === 2 ? '#cd7f32' : 'var(--primary-light)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 'bold',
+                color: idx < 3 ? 'white' : 'var(--primary)',
+                fontSize: '0.9rem'
+              }}>
+                {idx + 1}
+              </div>
+              <div style={{ flex: 1 }}>
+                <h4 style={{ margin: 0, fontSize: '0.95rem' }}>{entry.userName}</h4>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                  {entry.correct}/{entry.total} correct · ⏱ {formatTime(entry.timeTaken)}
+                </p>
+              </div>
+              <div style={{ fontWeight: 'bold', color: 'var(--secondary)', fontSize: '1rem' }}>
+                {entry.score} pts
+              </div>
+            </div>
+          ))
+        )}
+      </Card>
+    </div>
+  );
+};
+
